@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import './App.css';
+// import DateCounter from './DateCounter';
+import { useEffect, useReducer } from 'react';
+import Header from './components/Header';
+import Main from './components/Main';
+import Loader from './components/Loader';
+import Error from './components/Error';
+import StartScreen from './components/StartScreen';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const initialState = {
+  questions: [],
+  // loading - error - ready - active - finished
+  status: 'loading',
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'dataReceived':
+      return { ...state, questions: action.payload, status: 'ready' };
+    case 'dataFailed':
+      return { ...state, questions: [], status: 'error' };
+    default:
+      throw new Error('Check the reducer function in App.js..');
+  }
 }
 
-export default App;
+export default function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { questions, status } = state;
+
+  useEffect(() => {
+    fetch('http://localhost:8000/questions')
+      .then((response) => response.json())
+      .then((data) => dispatch({ type: 'dataReceived', payload: data }))
+      .catch((err) => dispatch({ type: 'dataFailed' }));
+  }, []);
+
+  return (
+    <>
+      <div className="app">
+        <Header />
+        <Main>
+          {status === 'loading' && <Loader />}
+          {status === 'error' && <Error />}
+          {status === 'ready' && (
+            <StartScreen numOfQuestions={questions.length} />
+          )}
+        </Main>
+      </div>
+    </>
+  );
+}
