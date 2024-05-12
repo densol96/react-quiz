@@ -6,8 +6,9 @@ import Loader from './components/Loader';
 import Error from './components/Error';
 import StartScreen from './components/StartScreen';
 import Question from './components/Question';
-import NextButton from './components/NextButton';
+import Button from './components/Button';
 import Progress from './components/Progress';
+import FinishedScreen from './components/FinishScreen';
 
 const initialState = {
   questions: [],
@@ -16,6 +17,7 @@ const initialState = {
   currentQuestion: 0,
   answer: null,
   points: 0,
+  highscore: +localStorage.getItem('highscore') ?? 0,
 };
 
 function reducer(state, action) {
@@ -42,6 +44,21 @@ function reducer(state, action) {
         currentQuestion: state.currentQuestion + 1,
         answer: null,
       };
+    case 'finishQuiz':
+      return {
+        ...state,
+        status: 'finished',
+        highscore:
+          state.points > state.highscore ? state.points : state.highscore,
+      };
+    case 'restart':
+      return {
+        ...state,
+        status: 'ready',
+        currentQuestion: 0,
+        answer: null,
+        points: 0,
+      };
     default:
       throw new Error('Check the reducer function in App.js..');
   }
@@ -49,7 +66,8 @@ function reducer(state, action) {
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { questions, status, currentQuestion, answer, points } = state;
+  const { questions, status, currentQuestion, answer, points, highscore } =
+    state;
   const questionsTotal = questions.length;
   const pointsTotal = questions.reduce(
     (total, question) => total + question.points,
@@ -62,6 +80,10 @@ export default function App() {
       .then((data) => dispatch({ type: 'dataReceived', payload: data }))
       .catch((err) => dispatch({ type: 'dataFailed' }));
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('highscore', highscore);
+  }, [highscore]);
 
   return (
     <>
@@ -90,7 +112,28 @@ export default function App() {
                 dispatch={dispatch}
                 answer={answer}
               />
-              <NextButton dispatch={dispatch} answer={answer} />
+              <Button
+                dispatch={dispatch}
+                answer={answer}
+                questionIndex={currentQuestion}
+                questionsTotal={questionsTotal}
+              />
+            </>
+          )}
+          {status === 'finished' && (
+            <>
+              <FinishedScreen
+                currentPoints={points}
+                pointsTotal={pointsTotal}
+                highscore={highscore}
+                dispatch={dispatch}
+              />
+              <button
+                className="btn btn-ui"
+                onClick={() => dispatch({ type: 'restart' })}
+              >
+                Restart
+              </button>
             </>
           )}
         </Main>
