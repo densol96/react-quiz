@@ -1,5 +1,6 @@
 // import DateCounter from './DateCounter';
 import { useEffect, useReducer } from 'react';
+
 import Header from './components/Header';
 import Main from './components/Main';
 import Loader from './components/Loader';
@@ -9,6 +10,9 @@ import Question from './components/Question';
 import Button from './components/Button';
 import Progress from './components/Progress';
 import FinishedScreen from './components/FinishScreen';
+import Timer from './components/Timer';
+
+const SECS_PER_QUESTION = 15;
 
 const initialState = {
   questions: [],
@@ -18,16 +22,24 @@ const initialState = {
   answer: null,
   points: 0,
   highscore: +localStorage.getItem('highscore') ?? 0,
+  secondsRemaining: null,
 };
 
 function reducer(state, action) {
   switch (action.type) {
     case 'dataReceived':
-      return { ...state, questions: action.payload, status: 'ready' };
+      return {
+        ...state,
+        questions: action.payload,
+        status: 'ready',
+        secondsRemaining: SECS_PER_QUESTION * action.payload.length,
+      };
     case 'dataFailed':
       return { ...state, questions: [], status: 'error' };
     case 'start':
       return { ...state, status: 'active' };
+    case 'tick':
+      return { ...state, secondsRemaining: state.secondsRemaining - 1 };
     case 'submitAnswer':
       const currentQuestionData = state.questions[state.currentQuestion];
       return {
@@ -58,6 +70,7 @@ function reducer(state, action) {
         currentQuestion: 0,
         answer: null,
         points: 0,
+        secondsRemaining: SECS_PER_QUESTION * state.questions.length,
       };
     default:
       throw new Error('Check the reducer function in App.js..');
@@ -66,8 +79,15 @@ function reducer(state, action) {
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { questions, status, currentQuestion, answer, points, highscore } =
-    state;
+  const {
+    questions,
+    status,
+    currentQuestion,
+    answer,
+    points,
+    highscore,
+    secondsRemaining,
+  } = state;
   const questionsTotal = questions.length;
   const pointsTotal = questions.reduce(
     (total, question) => total + question.points,
@@ -112,12 +132,18 @@ export default function App() {
                 dispatch={dispatch}
                 answer={answer}
               />
-              <Button
-                dispatch={dispatch}
-                answer={answer}
-                questionIndex={currentQuestion}
-                questionsTotal={questionsTotal}
-              />
+              <footer>
+                <Timer
+                  dispatch={dispatch}
+                  secondsRemaining={secondsRemaining}
+                />
+                <Button
+                  dispatch={dispatch}
+                  answer={answer}
+                  questionIndex={currentQuestion}
+                  questionsTotal={questionsTotal}
+                />
+              </footer>
             </>
           )}
           {status === 'finished' && (
