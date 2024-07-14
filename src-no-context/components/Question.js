@@ -1,8 +1,4 @@
-import { useQuizeContext } from "../QuizContext";
-
-function Question() {
-  const { question, dispatch, answer, points, questionNum, total } =
-    useQuizeContext();
+function Question({ question, dispatch, answer, points, questionNum, total }) {
   return (
     <div>
       <h4>{question.question}</h4>
@@ -13,12 +9,12 @@ function Question() {
             className={`btn btn-option ${
               answer !== null
                 ? i === question.correctOption
-                  ? "correct"
-                  : "wrong"
-                : ""
-            } ${answer === i ? "answer" : ""}`}
+                  ? 'correct'
+                  : 'wrong'
+                : ''
+            } ${answer === i ? 'answer' : ''}`}
             key={question.id + i}
-            onClick={() => dispatch({ type: "submitAnswer", payload: i })}
+            onClick={() => dispatch({ type: 'submitAnswer', payload: i })}
           >
             {option}
           </button>

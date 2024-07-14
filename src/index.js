@@ -1,12 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import { QuizProvider } from "./QuizContext";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
-  <App />
-  // <React.StrictMode>
-  //   <App />
-  // </React.StrictMode>
+  <QuizProvider>
+    <App />
+  </QuizProvider>
 );

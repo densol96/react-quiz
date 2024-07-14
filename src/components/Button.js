@@ -1,15 +1,14 @@
-export default function Button({
-  dispatch,
-  answer,
-  questionIndex,
-  questionsTotal,
-}) {
+import { useQuizeContext } from "../QuizContext";
+
+export default function Button() {
+  const { dispatch, answer, currentQuestion, questionsTotal } =
+    useQuizeContext();
   if (answer === null) return null;
-  else if (questionIndex < questionsTotal - 1) {
+  else if (currentQuestion < questionsTotal - 1) {
     return (
       <button
         className="btn btn-ui"
-        onClick={() => dispatch({ type: 'nextQuestion' })}
+        onClick={() => dispatch({ type: "nextQuestion" })}
       >
         Next
       </button>
@@ -18,7 +17,7 @@ export default function Button({
     return (
       <button
         className="btn btn-ui"
-        onClick={() => dispatch({ type: 'finishQuiz' })}
+        onClick={() => dispatch({ type: "finishQuiz" })}
       >
         Finish
       </button>
